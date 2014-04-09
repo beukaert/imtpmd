@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">imtpmd</string>
+    <string name="app_name">Pie4All</string>
     <string name="action_settings">Settings</string>
     <string name="hello_world">Hello world!</string>
-
+	<color name="bg_orange">#EF7624</color>
+    <color name="top_text_white">#EF7624</color>
 </resources>
