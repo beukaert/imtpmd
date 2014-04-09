@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
 	public ServerCommunicator serverCommunicator5;
 	private Spinner spinner2;
 	
+
+	
 	//JSON Node Names 
 	private static final String TAG_OS = "CATEGORIES";
 	private static final String TAG_VER = "ver";
@@ -62,12 +64,14 @@ public class MainActivity extends Activity {
         addItemsOnSpinner2();
 		addListenerOnSpinnerItemSelection();
         
-        serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
-        serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
-        serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
-        serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
-        serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
+        //serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
+        //serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
+        //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
+        //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
+        //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
 
+		MyDBHandler dbHandler = new MyDBHandler(this, null, null, 1);
+        
         //new JSONParse().execute();
     }
 

@@ -33,13 +33,13 @@ public class MyDBHandler extends SQLiteOpenHelper {
 	
 	@Override
 	public void onCreate(SQLiteDatabase db) {
-		String CREATE_CATEGORIES_TABLE = "CREATE TABLE " +
-	             TABLE_PRODUCTS + "("
-	             + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_PRODUCTNAME + COLUMN_PRICE
-	             + " TEXT," + COLUMN_QUANTITY + " INTEGER" + ")";
+		String CREATE_CATEGORIES_TABLE = "CREATE TABLE categories(cat_id INTEGER PRIMARY KEY, cat_name TEXT)";
 	    db.execSQL(CREATE_CATEGORIES_TABLE);
 	    
-	    String CREATE_PRODUCTS_TABLE = "CREATE TABLE " +
+	    
+	    System.out.println("db aangemaakt.. schijnt..");
+	    
+	    /*String CREATE_PRODUCTS_TABLE = "CREATE TABLE " +
 	             TABLE_PRODUCTS + "("
 	             + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_PRODUCTNAME + COLUMN_PRICE
 	             + " TEXT," + COLUMN_QUANTITY + " INTEGER" + ")";
@@ -49,13 +49,14 @@ public class MyDBHandler extends SQLiteOpenHelper {
 	             TABLE_PRODUCTS + "("
 	             + COLUMN_ID + " INTEGER PRIMARY KEY," + COLUMN_PRODUCTNAME + COLUMN_PRICE
 	             + " TEXT," + COLUMN_QUANTITY + " INTEGER" + ")";
-	    db.execSQL(CREATE_PRODUCTINFO_TABLE);
+	    db.execSQL(CREATE_PRODUCTINFO_TABLE);*/
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRODUCTS);
-	      onCreate(db);
+		db.execSQL("DROP TABLE IF EXISTS categories");
+		System.out.println("db aangemaakt.. schijnt..");
+	    onCreate(db);
 	}
 	
 	public void addProduct(Db_Product product) {

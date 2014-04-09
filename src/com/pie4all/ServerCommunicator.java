@@ -37,6 +37,7 @@ public class ServerCommunicator implements Runnable
 		this.typeOpdracht = typeOpdr;
 		this.jArrayName = jArrayName;
 
+		
 		//de nieuwe thread kan tekst verzenden en ontvangen van en naar een server
 		this.setThread(new Thread(this));
 		getThread().start();
