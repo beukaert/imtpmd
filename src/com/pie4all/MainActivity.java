@@ -10,9 +10,15 @@ import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -41,8 +47,9 @@ public class MainActivity extends Activity {
 	public ServerCommunicator serverCommunicator3;
 	public ServerCommunicator serverCommunicator4;
 	public ServerCommunicator serverCommunicator5;
+	public DBHandler db;
 	private Spinner spinner2;
-	
+	public SQLiteDatabase myDB= null;
 
 	
 	//JSON Node Names 
@@ -61,20 +68,102 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         oslist = new ArrayList<HashMap<String, String>>();
 
-        addItemsOnSpinner2();
+        myDB = this.openOrCreateDatabase("pie4allDB", MODE_PRIVATE, null);
+        
+        //controleren of er een netwerkverbinding is
+        if(isNetworkAvailable()){
+        	System.out.println("Er is internet!");
+        	//serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
+            //serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
+            //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
+            //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
+            //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
+        
+        	/* Create a Database. */
+			  try {
+			   /* Create a Table in the Database. */
+			   myDB.execSQL("CREATE TABLE IF NOT EXISTS "
+			     + "categories"
+			     + " (naam VARCHAR);");
+			 
+			   /* Insert data to a Table
+			   myDB.execSQL("INSERT INTO "
+			     + "categories"
+			     + " (naam)"
+			     + " VALUES ('Vlaaien');");*/
+			  
+			  }
+			  catch(Exception e) {
+			   Log.e("Error", "Error", e);
+			  }
+        }
+        else{
+        	System.out.println("Er is geen internet!");
+        	Cursor c = myDB.rawQuery("SELECT * FROM categories WHERE naam = 'Vlaaien'", null);
+       	 	c.moveToFirst();
+       	 
+       	 	int Column1 = c.getColumnIndex("naam");
+       	 
+       	 	if (c != null) {
+    		    // Loop through all Results
+       		 String data = "";
+    		    do {
+    		     String Name = c.getString(Column1);
+    		     //int Age = c.getInt(Column2);
+    		     data = data +Name+"\n";
+    		    }while(c.moveToNext());
+    		    
+    		    System.out.println("Oude data beschikbaar!");
+       	 	}
+       	 	else{
+       	 		
+       	 	}
+        }
+		
+		  
+		addItemsOnSpinner2();
 		addListenerOnSpinnerItemSelection();
-        
-        //serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
-        //serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
-        //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
-        //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
-        //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
-
-		MyDBHandler dbHandler = new MyDBHandler(this, null, null, 1);
-        
-        //new JSONParse().execute();
+		
+		//getData();
+		//new JSONParse().execute();
+		
+		if (myDB != null)
+		{
+			myDB.close();
+		}
     }
-
+    
+    private boolean isNetworkAvailable() {
+	    ConnectivityManager connectivityManager 
+	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+	}
+	
+    
+    public void getData(){
+    	 Cursor c = myDB.rawQuery("SELECT * FROM categories WHERE naam = 'Vlaaien'", null);
+    	 c.moveToFirst();
+    	 
+    	 int Column1 = c.getColumnIndex("naam");
+    	 
+    	 if (c != null) {
+ 		    // Loop through all Results
+    		 String data = "";
+    		 
+ 		    do {
+ 		     String Name = c.getString(Column1);
+ 		     //int Age = c.getInt(Column2);
+ 		     data = data +Name+"\n";
+ 		    }while(c.moveToNext());
+ 		    
+ 		    System.out.println("query gelukt!" + data);
+ 			 
+ 		 }
+    	 
+    	 
+    	 
+    }
     
     private class JSONParse extends AsyncTask<String, String, JSONObject> {
     	 private ProgressDialog pDialog;
@@ -215,5 +304,7 @@ public class MainActivity extends Activity {
  
         return super.onCreateOptionsMenu(menu);
     }
+	
+	
     
 }
