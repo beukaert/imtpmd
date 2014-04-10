@@ -9,8 +9,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -39,26 +41,25 @@ public class MainActivity extends Activity {
 	TextView ver;
 	TextView name;
 	TextView api;
-	Button Btngetdata;
+	
 	ArrayList<HashMap<String, String>> oslist = new ArrayList<HashMap<String, String>>();
 	
 	public ServerCommunicator serverCommunicator1;
 	public ServerCommunicator serverCommunicator2;
-	public ServerCommunicator serverCommunicator3;
-	public ServerCommunicator serverCommunicator4;
-	public ServerCommunicator serverCommunicator5;
-	public DBHandler db;
+	//public ServerCommunicator serverCommunicator3;
+	//public ServerCommunicator serverCommunicator4;
+	//public ServerCommunicator serverCommunicator5;
+	
 	private Spinner spinner2;
-	public SQLiteDatabase myDB= null;
-
+	public SQLiteDatabase myDB = null;
+	
+	public static String userCat = "Vlaaien";
 	
 	//JSON Node Names 
-	private static final String TAG_OS = "CATEGORIES";
-	private static final String TAG_VER = "ver";
 	private static final String TAG_NAME = "naam";
-	private static final String TAG_API = "api";
+	private static final String TAG_PRICE = "prijs";
 	
-	JSONArray jArray = null;
+	public JSONArray jArray = null;
 
 
     @Override
@@ -66,57 +67,108 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
       
         setContentView(R.layout.activity_main);
+        
         oslist = new ArrayList<HashMap<String, String>>();
-
+        
+        serverCommunicator1 = new ServerCommunicator(this, "Categories", "{ \"categorielijst\" : \"\" }");
+        serverCommunicator2 = new ServerCommunicator(this, "Vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
+        
         myDB = this.openOrCreateDatabase("pie4allDB", MODE_PRIVATE, null);
         
-        //controleren of er een netwerkverbinding is
+        //controleren of er een netwerkverbinding isd
         if(isNetworkAvailable()){
         	System.out.println("Er is internet!");
-        	//serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
-            //serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
+        	
+            
             //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
-            //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
-            //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
-        
+           // serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
+           //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
+        	
         	/* Create a Database. */
 			  try {
-			   /* Create a Table in the Database. */
-			   myDB.execSQL("CREATE TABLE IF NOT EXISTS "
-			     + "categories"
-			     + " (naam VARCHAR);");
+			   /* Create a Table in the Database.d */
+			   myDB.execSQL("DROP TABLE IF EXISTS categories");
+			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Categories (json VARCHAR);");
+			   
+			   myDB.execSQL("DROP TABLE IF EXISTS vlaaien");
+			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Vlaaien (json VARCHAR);");
 			 
-			   /* Insert data to a Table
+			   JSONObject json1 = serverCommunicator1.serverBericht;
+			   String stringToBeInserted1 = json1.toString();
+			   
+			   JSONObject json2 = serverCommunicator2.serverBericht;
+			   String stringToBeInserted2 = json2.toString();
+			   
+			   if(stringToBeInserted1 != ""){
+				   
+				   System.out.println("JSON" + stringToBeInserted1);
+			   }
+			   else{
+				   System.out.println("FAILED");
+			   }
+			   
+			   //Insert data to a Table
 			   myDB.execSQL("INSERT INTO "
-			     + "categories"
-			     + " (naam)"
-			     + " VALUES ('Vlaaien');");*/
+			     + "Categories"
+			     + " (json)"
+			     + " VALUES ('"+stringToBeInserted1+"');");
+			   
+			   myDB.execSQL("INSERT INTO "
+			     + "Vlaaien"
+			     + " (json)"
+			     + " VALUES ('"+stringToBeInserted2+"');");
 			  
+			   getData();
+			   
 			  }
 			  catch(Exception e) {
-			   Log.e("Error", "Error", e);
+				  AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+					
+			       	// Setting Dialog Title
+			       	alertDialog.setTitle("Pie4All");
+			
+			       	// Setting Dialog Message
+			       	alertDialog.setMessage("Geen gegevens beschikbaar. Verbind met het internet!");
+	       	 		
+			       	// Setting Positive "Yes" Btn
+			       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
+	       	        new DialogInterface.OnClickListener() {
+	       	            public void onClick(DialogInterface dialog, int which) {
+	       	                //App sluiten
+	       	            	finish();
+	       	            }
+	       	        });
+			       	alertDialog.show();
 			  }
         }
         else{
         	System.out.println("Er is geen internet!");
-        	Cursor c = myDB.rawQuery("SELECT * FROM categories WHERE naam = 'Vlaaien'", null);
-       	 	c.moveToFirst();
-       	 
-       	 	int Column1 = c.getColumnIndex("naam");
-       	 
-       	 	if (c != null) {
-    		    // Loop through all Results
-       		 String data = "";
-    		    do {
-    		     String Name = c.getString(Column1);
-    		     //int Age = c.getInt(Column2);
-    		     data = data +Name+"\n";
-    		    }while(c.moveToNext());
-    		    
-    		    System.out.println("Oude data beschikbaar!");
+       	 	
+        	myDB.execSQL("DROP TABLE IF EXISTS categories");
+        	
+       	 	try {
+       	 		myDB.rawQuery("SELECT json FROM sqlite_master WHERE type = 'table' AND name = 'categories'", null);
+    		    System.out.println("Oudere data beschikbaar!");
        	 	}
-       	 	else{
+       	 	catch(Exception e){
        	 		
+       	 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+		
+		       	// Setting Dialog Title
+		       	alertDialog.setTitle("Pie4All");
+		
+		       	// Setting Dialog Message
+		       	alertDialog.setMessage("Geen gegevens beschikbaar. Verbind met het internet!");
+       	 		
+		       	// Setting Positive "Yes" Btn
+		       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
+       	        new DialogInterface.OnClickListener() {
+       	            public void onClick(DialogInterface dialog, int which) {
+       	                //App sluiten
+       	            	finish();
+       	            }
+       	        });
+		       	alertDialog.show();
        	 	}
         }
 		
@@ -124,32 +176,39 @@ public class MainActivity extends Activity {
 		addItemsOnSpinner2();
 		addListenerOnSpinnerItemSelection();
 		
-		//getData();
-		//new JSONParse().execute();
+		new JSONParse().execute();
 		
-		if (myDB != null)
+		/*if (myDB != null)
 		{
 			myDB.close();
-		}
+		}*/
+    }
+    
+    public static String setUserCat(String input)
+    {
+    	userCat = input;
+    	System.out.println("usercat = " + userCat);
+
+		return userCat;
     }
     
     private boolean isNetworkAvailable() {
-	    ConnectivityManager connectivityManager 
-	          = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+	    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
 	}
 	
     
-    public void getData(){
-    	 Cursor c = myDB.rawQuery("SELECT * FROM categories WHERE naam = 'Vlaaien'", null);
+    public String getData(){
+    	 Cursor c = myDB.rawQuery("SELECT json FROM "+userCat, null);
     	 c.moveToFirst();
     	 
-    	 int Column1 = c.getColumnIndex("naam");
+    	 String data = "";
+    	 
+    	 int Column1 = c.getColumnIndex("json");
     	 
     	 if (c != null) {
  		    // Loop through all Results
-    		 String data = "";
     		 
  		    do {
  		     String Name = c.getString(Column1);
@@ -157,12 +216,11 @@ public class MainActivity extends Activity {
  		     data = data +Name+"\n";
  		    }while(c.moveToNext());
  		    
- 		    System.out.println("query gelukt!" + data);
+ 		    System.out.println("query gelukt! " + data);
  			 
  		 }
     	 
-    	 
-    	 
+    	 return data;
     }
     
     private class JSONParse extends AsyncTask<String, String, JSONObject> {
@@ -170,9 +228,7 @@ public class MainActivity extends Activity {
     	@Override
         protected void onPreExecute() {
             super.onPreExecute();
-             ver = (TextView)findViewById(R.id.vers);
 			 name = (TextView)findViewById(R.id.name);
-			 api = (TextView)findViewById(R.id.api);
             pDialog = new ProgressDialog(MainActivity.this);
             pDialog.setMessage("Getting Data ...");
             pDialog.setIndeterminate(false);
@@ -183,9 +239,45 @@ public class MainActivity extends Activity {
     	@Override
         protected JSONObject doInBackground(String... args) {
 
-    		JSONObject json = serverCommunicator1.getServerBericht();
-    		//JSONObject json = serverCommunicator.getCategories();
-    		//JSONObject json = serverCommunicator.getProducts();
+    		//JSONObject json = serverCommunicator1.serverBericht;
+    		//System.out.println("wtf" + json);
+    		
+    		JSONObject json = null;
+			try {
+				
+				//json ophalen uit database
+				Cursor c = myDB.rawQuery("SELECT json FROM "+userCat, null);
+		    	 c.moveToFirst();
+		    	 
+		    	 String data = "";
+		    	 
+		    	 int Column1 = c.getColumnIndex("json");
+		    	 
+		    	 if (c != null) {
+		 		    // Loop through all Results
+		    		 
+		 		    do {
+		 		     String Name = c.getString(Column1);
+		 		     //int Age = c.getInt(Column2);
+		 		     data = data +Name+"\n";
+		 		    }while(c.moveToNext());
+		 		    
+		 		    System.out.println("query gelukt! " + data);
+		 			 
+		 		 }
+
+				String json1 = data;
+				JSONObject jsonObject = new JSONObject(json1);
+
+				/*"{\"categories\":[{\"naam\":\"Vlaaien\"},{\"naam\":\"Cakes\"},{\"naam\":\"Bruidstaarten\"},{\"naam\":\"Verjaardagstaarten\"}]}";*/
+				
+				json = jsonObject;
+				
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				System.out.println("dit niet");
+				e.printStackTrace();
+			}
     		
     		return json;
     	}
@@ -194,7 +286,7 @@ public class MainActivity extends Activity {
     		 pDialog.dismiss();
     		 try {
     				// Getting JSON Array from URL
-    			 jArray = json.getJSONArray(TAG_OS);
+    			 jArray = json.getJSONArray(userCat);
     				for(int i = 0; i < jArray.length(); i++){
     				JSONObject c = jArray.getJSONObject(i);
     				
@@ -217,8 +309,8 @@ public class MainActivity extends Activity {
     				
     				ListAdapter adapter = new SimpleAdapter(MainActivity.this, oslist,
     						R.layout.list_v,
-    						new String[] { TAG_VER,TAG_NAME, TAG_API }, new int[] {
-    								R.id.vers,R.id.name, R.id.api});
+    						new String[] {TAG_NAME}, new int[] {
+    								R.id.name});
 
     				
     				
@@ -268,9 +360,9 @@ public class MainActivity extends Activity {
 	 
 	public void addListenerOnSpinnerItemSelection() {
 		spinner2.setOnItemSelectedListener(new CustomOnItemSelectedListener());
+		
 	}
 	 
-	  // get the selected dropdown list value
 
 
 	public void onClick(View src) {
