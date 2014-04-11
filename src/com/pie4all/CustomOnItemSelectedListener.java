@@ -13,8 +13,6 @@ public void onItemSelected(AdapterView<?> parent, View view, int pos,long id) {
 	Toast.LENGTH_SHORT).show();
 	
 	MainActivity.setUserCat(parent.getItemAtPosition(pos).toString());
-	//serverCommunicator2 = new ServerCommunicator(null, "categorielijst");
-	//System.out.println("ONTVANGEN:2" + serverCommunicator2.getServerBericht());
 	
   }
  

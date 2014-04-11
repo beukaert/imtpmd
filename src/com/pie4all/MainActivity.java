@@ -70,16 +70,16 @@ public class MainActivity extends Activity {
         
         oslist = new ArrayList<HashMap<String, String>>();
         
-        serverCommunicator1 = new ServerCommunicator(this, "Categories", "{ \"categorielijst\" : \"\" }");
-        serverCommunicator2 = new ServerCommunicator(this, "Vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
-        
         myDB = this.openOrCreateDatabase("pie4allDB", MODE_PRIVATE, null);
+        
+        
         
         //controleren of er een netwerkverbinding isd
         if(isNetworkAvailable()){
         	System.out.println("Er is internet!");
         	
-            
+        	serverCommunicator1 = new ServerCommunicator(this, "Categories", "{ \"categorielijst\" : \"\" }");
+            serverCommunicator2 = new ServerCommunicator(this, "Vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
             //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
            // serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
            //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
@@ -87,10 +87,10 @@ public class MainActivity extends Activity {
         	/* Create a Database. */
 			  try {
 			   /* Create a Table in the Database.d */
-			   myDB.execSQL("DROP TABLE IF EXISTS categories");
+			   myDB.execSQL("DROP TABLE IF EXISTS Categories");
 			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Categories (json VARCHAR);");
 			   
-			   myDB.execSQL("DROP TABLE IF EXISTS vlaaien");
+			   myDB.execSQL("DROP TABLE IF EXISTS Vlaaien");
 			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Vlaaien (json VARCHAR);");
 			 
 			   JSONObject json1 = serverCommunicator1.serverBericht;
@@ -117,8 +117,6 @@ public class MainActivity extends Activity {
 			     + "Vlaaien"
 			     + " (json)"
 			     + " VALUES ('"+stringToBeInserted2+"');");
-			  
-			   getData();
 			   
 			  }
 			  catch(Exception e) {
@@ -128,7 +126,7 @@ public class MainActivity extends Activity {
 			       	alertDialog.setTitle("Pie4All");
 			
 			       	// Setting Dialog Message
-			       	alertDialog.setMessage("Geen gegevens beschikbaar. Verbind met het internet!");
+			       	alertDialog.setMessage("Crashed on loading db");
 	       	 		
 			       	// Setting Positive "Yes" Btn
 			       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
@@ -143,8 +141,6 @@ public class MainActivity extends Activity {
         }
         else{
         	System.out.println("Er is geen internet!");
-       	 	
-        	myDB.execSQL("DROP TABLE IF EXISTS categories");
         	
        	 	try {
        	 		myDB.rawQuery("SELECT json FROM sqlite_master WHERE type = 'table' AND name = 'categories'", null);

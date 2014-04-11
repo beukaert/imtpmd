@@ -90,147 +90,145 @@ public class ServerCommunicator implements Runnable
 	}
 
 
-	//ook deze methoden kunnen niet naar de UI direct communiceren, hou hier rekening mee
-		private void sendMessage( String message, Socket socket )
-		{
+//ook deze methoden kunnen niet naar de UI direct communiceren, hou hier rekening mee
+	private void sendMessage( String message, Socket socket )
+	{
 
-			DataInputStream is;
-			DataOutputStream os;
-			boolean result = true;
-			String noReset = "Could not reset.";
-			String reset = "SEND TO SERVER.";
+		DataInputStream is;
+		DataOutputStream os;
+		boolean result = true;
+		String noReset = "Could not reset.";
+		String reset = "SEND TO SERVER.";
 
-			try {
-				String string = message;
-				is = new DataInputStream(socket.getInputStream());
-				os = new DataOutputStream(socket.getOutputStream());
-				PrintWriter pw = new PrintWriter(os);
-				pw.println(string);
-				pw.flush();
+		try {
+			String string = message;
+			is = new DataInputStream(socket.getInputStream());
+			os = new DataOutputStream(socket.getOutputStream());
+			PrintWriter pw = new PrintWriter(os);
+			pw.println(string);
+			pw.flush();
 
-				BufferedReader in = new BufferedReader(new InputStreamReader(is));
-				JSONObject json = new JSONObject(in.readLine());
-				if(!json.has("naam"))
-				{
-					System.out.println("Could not reset.");
-					result = false;
-				}
-				//is.close();
-				//os.close();
-
-				}
-				catch (IOException e) 
-				{
-					result = false;
-					System.out.println(noReset);
-					//e.printStackTrace();			
-				} 
-				catch (JSONException e) 
-				{
-					result = false;
-					System.out.println(noReset);
-					//e.printStackTrace();
-				}
-
-		}
-
-
-		/*private void jsonToArray(JSONArray bestelInfo ) throws IOException
-		{
-			JSONObject bestelling = (JSONObject) bestelInfo.get(0);
-			JSONObject koper = (JSONObject) bestelInfo.get(1);
-
-			String productNaam = bestelling.get( "productnaam" ).toString();
-			String productAantal = bestelling.get( "productaantal" ).toString();
-			
-			String koperNaam = koper.get( "kopernaam" ).toString();
-			String koperAdres = koper.get( "koperadres" ).toString();
-			String koperTelNr = koper.get( "kopertelnr" ).toString();
-			String koperEmail = koper.get( "koperemail" ).toString();
-			
-		}*/
-
-
-
-		//wacht op server bericht (na versturen)
-		private JSONObject waitForResponse(Socket socket) throws JSONException
-		{
-			BufferedReader bufferedReader = null;
-			String returnMessage = null;
-			try
+			BufferedReader in = new BufferedReader(new InputStreamReader(is));
+			JSONObject json = new JSONObject(in.readLine());
+			if(!json.has("naam"))
 			{
-				InputStream inputStream = socket.getInputStream();
-				//InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
-				//bufferedReader = new BufferedReader( inputStreamReader );
-
-
-				//setServerBericht(json);
-
-				try {
-					BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"), 8);
-					StringBuilder sb = new StringBuilder();
-					String line = null;
-
-					json = reader.readLine();
-					//System.out.println("json IS BINNEN:" + json);
-
-
-					while ((line = reader.readLine()) != null) {
-
-					}
-					//inputStream.close();
-					//json = sb.toString();
-				} catch (Exception e) {
-					//Log.e("System.out", "Error converting result " + e.toString());
-					//System.out.println("Error converting result" + json);
-				}
-
-
-				// try parse the string to a JSON object
-				try {
-					JSONArray ja = new JSONArray(json);
-					JSONObject jo = new JSONObject();
-
-					// populate the array
-					jo.put(jArrayName,ja);
-					serverBericht = jo;
-
-				} catch (JSONException e) {
-					Log.e("System.out", "Error parsing data " + e.toString());
-					System.out.println("Error parsing data " + json);
-				}
-
-				// return JSON object
-				return serverBericht;
+				System.out.println("Could not reset.");
+				result = false;
+			}
+			//is.close();
+			//os.close();
 
 			}
-
-			catch (IOException e1){
-				e1.printStackTrace();
-				InetAddress adress = socket.getInetAddress();
-				Log.d("debug", "Can't create inputStreamReader to talk to client " + adress);
-				Log.d("debug", e1.getMessage());
+			catch (IOException e) 
+			{
+				result = false;
+				System.out.println(noReset);
+				//e.printStackTrace();			
+			} 
+			catch (JSONException e) 
+			{
+				result = false;
+				System.out.println(noReset);
+				//e.printStackTrace();
 			}
-
-			//System.out.println("ONTVANGEN1:" + serverBericht);
-			return serverBericht;
-		}
-
-		public Thread getThread(){
-			return thread;
-		}
-
-		public void setServerBericht(JSONObject respons){
-			this.serverBericht = respons;
-		}
-
-		public void setThread(Thread thread){
-			this.thread = thread;
-		}
-
-		public JSONObject getServerBericht(){
-			System.out.println("serverbericht:" + serverBericht);
-			return serverBericht;
-		}
 
 	}
+
+
+	/*private void jsonToArray(JSONArray bestelInfo ) throws IOException
+	{
+		JSONObject bestelling = (JSONObject) bestelInfo.get(0);
+		JSONObject koper = (JSONObject) bestelInfo.get(1);
+
+		String productNaam = bestelling.get( "productnaam" ).toString();
+		String productAantal = bestelling.get( "productaantal" ).toString();
+		
+		String koperNaam = koper.get( "kopernaam" ).toString();
+		String koperAdres = koper.get( "koperadres" ).toString();
+		String koperTelNr = koper.get( "kopertelnr" ).toString();
+		String koperEmail = koper.get( "koperemail" ).toString();
+		
+	}*/
+
+	//wacht op server bericht (na versturen)
+	private JSONObject waitForResponse(Socket socket) throws JSONException
+	{
+		BufferedReader bufferedReader = null;
+		String returnMessage = null;
+		try
+		{
+			InputStream inputStream = socket.getInputStream();
+			//InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
+			//bufferedReader = new BufferedReader( inputStreamReader );
+
+
+			//setServerBericht(json);
+
+			try {
+				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"), 8);
+				StringBuilder sb = new StringBuilder();
+				String line = null;
+
+				json = reader.readLine();
+				//System.out.println("json IS BINNEN:" + json);
+
+
+				while ((line = reader.readLine()) != null) {
+
+				}
+				//inputStream.close();
+				//json = sb.toString();
+			} catch (Exception e) {
+				//Log.e("System.out", "Error converting result " + e.toString());
+				//System.out.println("Error converting result" + json);
+			}
+
+
+			// try parse the string to a JSON object
+			try {
+				JSONArray ja = new JSONArray(json);
+				JSONObject jo = new JSONObject();
+
+				// populate the array
+				jo.put(jArrayName,ja);
+				serverBericht = jo;
+
+			} catch (JSONException e) {
+				Log.e("System.out", "Error parsing data " + e.toString());
+				System.out.println("Error parsing data " + json);
+			}
+
+			// return JSON object
+			return serverBericht;
+
+		}
+
+		catch (IOException e1){
+			e1.printStackTrace();
+			InetAddress adress = socket.getInetAddress();
+			Log.d("debug", "Can't create inputStreamReader to talk to client " + adress);
+			Log.d("debug", e1.getMessage());
+		}
+
+		//System.out.println("ONTVANGEN1:" + serverBericht);
+		return serverBericht;
+	}
+
+	public Thread getThread(){
+		return thread;
+	}
+
+	public void setServerBericht(JSONObject respons){
+		this.serverBericht = respons;
+	}
+
+	public void setThread(Thread thread){
+		this.thread = thread;
+	}
+
+	public JSONObject getServerBericht(){
+		System.out.println("serverbericht:" + serverBericht);
+		return serverBericht;
+	}
+
+}
