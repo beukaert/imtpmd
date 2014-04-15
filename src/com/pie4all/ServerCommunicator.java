@@ -16,7 +16,6 @@ import java.net.UnknownHostException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.util.Log;
@@ -36,7 +35,6 @@ public class ServerCommunicator implements Runnable
 		this.activity = activity;
 		this.typeOpdracht = typeOpdr;
 		this.jArrayName = jArrayName;
-
 
 		this.setThread(new Thread(this));
 		getThread().start();
@@ -70,12 +68,10 @@ public class ServerCommunicator implements Runnable
 		}
 		catch( UnknownHostException e )
 		{
-			Log.d("debug", "ServerCommunicator, can't find host");
 			System.out.println("ServerCommunicator, can't find host");
 		}
 		catch( SocketTimeoutException e )
 		{
-			Log.d("debug", "ServerCommunicator, time-out");
 			System.out.println("ServerCommunicator, time-out");
 		}
 		catch (IOException e)
@@ -96,9 +92,6 @@ public class ServerCommunicator implements Runnable
 
 		DataInputStream is;
 		DataOutputStream os;
-		boolean result = true;
-		String noReset = "Could not reset.";
-		String reset = "SEND TO SERVER.";
 
 		try {
 			String string = message;
@@ -109,78 +102,31 @@ public class ServerCommunicator implements Runnable
 			pw.flush();
 
 			BufferedReader in = new BufferedReader(new InputStreamReader(is));
-			JSONObject json = new JSONObject(in.readLine());
-			if(!json.has("naam"))
-			{
-				System.out.println("Could not reset.");
-				result = false;
-			}
-			//is.close();
-			//os.close();
+			in.readLine();
 
 			}
 			catch (IOException e) 
 			{
-				result = false;
-				System.out.println(noReset);
-				//e.printStackTrace();			
+				System.out.println("Connection error!");	
 			} 
-			catch (JSONException e) 
-			{
-				result = false;
-				System.out.println(noReset);
-				//e.printStackTrace();
-			}
 
 	}
-
-
-	/*private void jsonToArray(JSONArray bestelInfo ) throws IOException
-	{
-		JSONObject bestelling = (JSONObject) bestelInfo.get(0);
-		JSONObject koper = (JSONObject) bestelInfo.get(1);
-
-		String productNaam = bestelling.get( "productnaam" ).toString();
-		String productAantal = bestelling.get( "productaantal" ).toString();
-		
-		String koperNaam = koper.get( "kopernaam" ).toString();
-		String koperAdres = koper.get( "koperadres" ).toString();
-		String koperTelNr = koper.get( "kopertelnr" ).toString();
-		String koperEmail = koper.get( "koperemail" ).toString();
-		
-	}*/
 
 	//wacht op server bericht (na versturen)
 	private JSONObject waitForResponse(Socket socket) throws JSONException
 	{
-		BufferedReader bufferedReader = null;
-		String returnMessage = null;
+
 		try
 		{
 			InputStream inputStream = socket.getInputStream();
-			//InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
-			//bufferedReader = new BufferedReader( inputStreamReader );
-
-
-			//setServerBericht(json);
 
 			try {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"), 8);
-				StringBuilder sb = new StringBuilder();
-				String line = null;
-
 				json = reader.readLine();
-				//System.out.println("json IS BINNEN:" + json);
-
-
-				while ((line = reader.readLine()) != null) {
-
-				}
-				//inputStream.close();
-				//json = sb.toString();
+				inputStream.close();
+				
 			} catch (Exception e) {
-				//Log.e("System.out", "Error converting result " + e.toString());
-				//System.out.println("Error converting result" + json);
+				System.out.println("Error converting result" + json);
 			}
 
 
@@ -210,7 +156,6 @@ public class ServerCommunicator implements Runnable
 			Log.d("debug", e1.getMessage());
 		}
 
-		//System.out.println("ONTVANGEN1:" + serverBericht);
 		return serverBericht;
 	}
 
@@ -227,7 +172,7 @@ public class ServerCommunicator implements Runnable
 	}
 
 	public JSONObject getServerBericht(){
-		System.out.println("serverbericht:" + serverBericht);
+		//System.out.println("serverbericht:" + serverBericht);
 		return serverBericht;
 	}
 

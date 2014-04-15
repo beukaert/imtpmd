@@ -53,14 +53,13 @@ public class MainActivity extends Activity {
 	private Spinner spinner2;
 	public SQLiteDatabase myDB = null;
 	
-	public static String userCat = "Vlaaien";
+	public static String userCat = "vlaaien";
 	
 	//JSON Node Names 
 	private static final String TAG_NAME = "naam";
 	private static final String TAG_PRICE = "prijs";
 	
 	public JSONArray jArray = null;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,31 +71,30 @@ public class MainActivity extends Activity {
         
         myDB = this.openOrCreateDatabase("pie4allDB", MODE_PRIVATE, null);
         
-        
-        
         //controleren of er een netwerkverbinding isd
         if(isNetworkAvailable()){
         	System.out.println("Er is internet!");
-        	
-        	serverCommunicator1 = new ServerCommunicator(this, "Categories", "{ \"categorielijst\" : \"\" }");
-            serverCommunicator2 = new ServerCommunicator(this, "Vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
-            //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
-           // serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
-           //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
-        	
+	
         	/* Create a Database. */
 			  try {
-			   /* Create a Table in the Database.d */
-			   myDB.execSQL("DROP TABLE IF EXISTS Categories");
-			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Categories (json VARCHAR);");
+			
+			   serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
+			   serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
+			   //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
+			   //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
+			   //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
+			
+			   /* Create a Table in the Database. */
+			   myDB.execSQL("DROP TABLE IF EXISTS categories");
+			   myDB.execSQL("CREATE TABLE IF NOT EXISTS categories (json VARCHAR);");
 			   
-			   myDB.execSQL("DROP TABLE IF EXISTS Vlaaien");
-			   myDB.execSQL("CREATE TABLE IF NOT EXISTS Vlaaien (json VARCHAR);");
+			   myDB.execSQL("DROP TABLE IF EXISTS vlaaien");
+			   myDB.execSQL("CREATE TABLE IF NOT EXISTS vlaaien (json VARCHAR);");
 			 
-			   JSONObject json1 = serverCommunicator1.serverBericht;
+			   JSONObject json1 = serverCommunicator1.getServerBericht();
 			   String stringToBeInserted1 = json1.toString();
 			   
-			   JSONObject json2 = serverCommunicator2.serverBericht;
+			   JSONObject json2 = serverCommunicator2.getServerBericht();
 			   String stringToBeInserted2 = json2.toString();
 			   
 			   if(stringToBeInserted1 != ""){
@@ -109,19 +107,20 @@ public class MainActivity extends Activity {
 			   
 			   //Insert data to a Table
 			   myDB.execSQL("INSERT INTO "
-			     + "Categories"
+			     + "categories"
 			     + " (json)"
 			     + " VALUES ('"+stringToBeInserted1+"');");
 			   
 			   myDB.execSQL("INSERT INTO "
-			     + "Vlaaien"
+			     + "vlaaien"
 			     + " (json)"
 			     + " VALUES ('"+stringToBeInserted2+"');");
 			   
 			  }
 			  catch(Exception e) {
+				  System.out.println("DB niet bereikbaar!");
 				  AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-					
+				  	
 			       	// Setting Dialog Title
 			       	alertDialog.setTitle("Pie4All");
 			
@@ -173,11 +172,6 @@ public class MainActivity extends Activity {
 		addListenerOnSpinnerItemSelection();
 		
 		new JSONParse().execute();
-		
-		/*if (myDB != null)
-		{
-			myDB.close();
-		}*/
     }
     
     public static String setUserCat(String input)
@@ -345,10 +339,10 @@ public class MainActivity extends Activity {
     public void addItemsOnSpinner2() {
 		spinner2 = (Spinner) findViewById(R.id.spinner2);
 		List<String> list = new ArrayList<String>();
-		list.add("Vlaaien");
-		list.add("Cakes");
-		list.add("Bruidstaarten");
-		list.add("Verjaardagstaarten");
+		list.add("vlaaien");
+		list.add("cakes");
+		list.add("bruidstaarten");
+		list.add("verjaardagstaarten");
 		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, list);
 		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner2.setAdapter(dataAdapter);
