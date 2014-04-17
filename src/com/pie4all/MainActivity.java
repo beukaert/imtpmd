@@ -20,20 +20,16 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.AdapterView.OnItemClickListener;
 
 
 public class MainActivity extends Activity {
@@ -46,18 +42,13 @@ public class MainActivity extends Activity {
 	
 	public ServerCommunicator serverCommunicator1;
 	public ServerCommunicator serverCommunicator2;
-	//public ServerCommunicator serverCommunicator3;
-	//public ServerCommunicator serverCommunicator4;
-	//public ServerCommunicator serverCommunicator5;
-	
 	private Spinner spinner2;
 	public SQLiteDatabase myDB = null;
-	
+	public Boolean error = false;
 	public static String userCat = "vlaaien";
 	
-	//JSON Node Names 
+	//JSON namen
 	private static final String TAG_NAME = "naam";
-	private static final String TAG_PRICE = "prijs";
 	
 	public JSONArray jArray = null;
 
@@ -67,45 +58,40 @@ public class MainActivity extends Activity {
       
         setContentView(R.layout.activity_main);
         
+        //arraylist aanmaken
         oslist = new ArrayList<HashMap<String, String>>();
         
+        //database openen indien deze al bestaat, anders aanmaken.
         myDB = this.openOrCreateDatabase("pie4allDB", MODE_PRIVATE, null);
         
-        //controleren of er een netwerkverbinding isd
+        //controleren of er een netwerkverbinding is
         if(isNetworkAvailable()){
         	System.out.println("Er is internet!");
 	
-        	/* Create a Database. */
-			  try {
-			
+        	//database vullen met data vanaf server
+			try {
+			   //communiceren met server, gegevens ophalen
 			   serverCommunicator1 = new ServerCommunicator(this, "categories", "{ \"categorielijst\" : \"\" }");
 			   serverCommunicator2 = new ServerCommunicator(this, "vlaaien", "{ \"productenlijst\" : \"Vlaaien\" }");
 			   //serverCommunicator3 = new ServerCommunicator(this, "cakes", "{ \"productenlijst\" : \"Cakes\" }");
 			   //serverCommunicator4 = new ServerCommunicator(this, "bruidstaarten", "{ \"productenlijst\" : \"Bruidstaarten\" }");
-			   //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }");
+			   //serverCommunicator5 = new ServerCommunicator(this, "verjaardagstaarten", "{ \"productenlijst\" : \"Verjaardagstaarten\" }"d);
 			
-			   /* Create a Table in the Database. */
+			   //tabellen aanmaken in de database
 			   myDB.execSQL("DROP TABLE IF EXISTS categories");
 			   myDB.execSQL("CREATE TABLE IF NOT EXISTS categories (json VARCHAR);");
-			   
+
 			   myDB.execSQL("DROP TABLE IF EXISTS vlaaien");
 			   myDB.execSQL("CREATE TABLE IF NOT EXISTS vlaaien (json VARCHAR);");
 			 
+			   //van JSON objects naar strings converteren zodat deze in de database geplaatst kunnen worden
 			   JSONObject json1 = serverCommunicator1.getServerBericht();
 			   String stringToBeInserted1 = json1.toString();
 			   
 			   JSONObject json2 = serverCommunicator2.getServerBericht();
 			   String stringToBeInserted2 = json2.toString();
 			   
-			   if(stringToBeInserted1 != ""){
-				   
-				   System.out.println("JSON" + stringToBeInserted1);
-			   }
-			   else{
-				   System.out.println("FAILED");
-			   }
-			   
-			   //Insert data to a Table
+			   //gegevens invoeren in tabellen
 			   myDB.execSQL("INSERT INTO "
 			     + "categories"
 			     + " (json)"
@@ -118,7 +104,11 @@ public class MainActivity extends Activity {
 			   
 			  }
 			  catch(Exception e) {
+				  //halt code indien fout
+				  error = true;
 				  System.out.println("DB niet bereikbaar!");
+				  
+				  //alert pop-up triggeren
 				  AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 				  	
 			       	// Setting Dialog Title
@@ -131,7 +121,7 @@ public class MainActivity extends Activity {
 			       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
 	       	        new DialogInterface.OnClickListener() {
 	       	            public void onClick(DialogInterface dialog, int which) {
-	       	                //App sluiten
+	       	                //App sluiten onclick
 	       	            	finish();
 	       	            }
 	       	        });
@@ -146,7 +136,8 @@ public class MainActivity extends Activity {
     		    System.out.println("Oudere data beschikbaar!");
        	 	}
        	 	catch(Exception e){
-       	 		
+       	 		//halt code indien fout
+       	 		error = true;
        	 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 		
 		       	// Setting Dialog Title
@@ -159,7 +150,7 @@ public class MainActivity extends Activity {
 		       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
        	        new DialogInterface.OnClickListener() {
        	            public void onClick(DialogInterface dialog, int which) {
-       	                //App sluiten
+       	                //App sluiten onclick
        	            	finish();
        	            }
        	        });
@@ -167,15 +158,22 @@ public class MainActivity extends Activity {
        	 	}
         }
 		
-		  
+		//items toevoegen aan de spinner
 		addItemsOnSpinner2();
+		
+		//listener toevoegen aan spinner
 		addListenerOnSpinnerItemSelection();
 		
-		new JSONParse().execute();
+		//controleren op fouten, anders doorgaan
+		if(!error)
+		{
+			new JSONParse().execute();
+		}
     }
     
     public static String setUserCat(String input)
     {
+    	//categorie veranderen
     	userCat = input;
     	System.out.println("usercat = " + userCat);
 
@@ -183,6 +181,7 @@ public class MainActivity extends Activity {
     }
     
     private boolean isNetworkAvailable() {
+    	//controleren of het toestel verboden is met netwerk
 	    ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 	    NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
 	    return activeNetworkInfo != null && activeNetworkInfo.isConnected();
@@ -190,6 +189,7 @@ public class MainActivity extends Activity {
 	
     
     public String getData(){
+    	//gegevens uit database halen
     	 Cursor c = myDB.rawQuery("SELECT json FROM "+userCat, null);
     	 c.moveToFirst();
     	 
@@ -214,13 +214,14 @@ public class MainActivity extends Activity {
     }
     
     private class JSONParse extends AsyncTask<String, String, JSONObject> {
-    	 private ProgressDialog pDialog;
+    	private ProgressDialog pDialog;
+    	//trigger dialog
     	@Override
         protected void onPreExecute() {
             super.onPreExecute();
 			 name = (TextView)findViewById(R.id.name);
             pDialog = new ProgressDialog(MainActivity.this);
-            pDialog.setMessage("Getting Data ...");
+            pDialog.setMessage("Ophalen lekkers ...");
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(true);
             pDialog.show(); 
@@ -228,10 +229,6 @@ public class MainActivity extends Activity {
     	
     	@Override
         protected JSONObject doInBackground(String... args) {
-
-    		//JSONObject json = serverCommunicator1.serverBericht;
-    		//System.out.println("wtf" + json);
-    		
     		JSONObject json = null;
 			try {
 				
@@ -255,11 +252,9 @@ public class MainActivity extends Activity {
 		 		    System.out.println("query gelukt! " + data);
 		 			 
 		 		 }
-
+		    	//string uit database omzetten naar json object
 				String json1 = data;
 				JSONObject jsonObject = new JSONObject(json1);
-
-				/*"{\"categories\":[{\"naam\":\"Vlaaien\"},{\"naam\":\"Cakes\"},{\"naam\":\"Bruidstaarten\"},{\"naam\":\"Verjaardagstaarten\"}]}";*/
 				
 				json = jsonObject;
 				
@@ -275,23 +270,17 @@ public class MainActivity extends Activity {
          protected void onPostExecute(JSONObject json) {
     		 pDialog.dismiss();
     		 try {
-    				// Getting JSON Array from URL
+    		     // JSON object verwerken naar array
     			 jArray = json.getJSONArray(userCat);
     				for(int i = 0; i < jArray.length(); i++){
     				JSONObject c = jArray.getJSONObject(i);
     				
-    				// Storing  JSON item in a Variable
-    				//String ver = c.getString(TAG_VER);
     				String name = c.getString(TAG_NAME);
-    				//String api = c.getString(TAG_API);
-    				
 
     				// Adding value HashMap key => value
     				HashMap<String, String> map = new HashMap<String, String>();
 
-    				//map.put(TAG_VER, ver);
     				map.put(TAG_NAME, name);
-    				//map.put(TAG_API, api);
     				
     				oslist.add(map);
     				list=(ListView)findViewById(R.id.list);
@@ -299,17 +288,11 @@ public class MainActivity extends Activity {
     				
     				ListAdapter adapter = new SimpleAdapter(MainActivity.this, oslist,
     						R.layout.list_v,
-    						new String[] {TAG_NAME}, new int[] {
-    								R.id.name});
-
-    				
+    						new String[] {TAG_NAME}, new int[] {R.id.name});
     				
     				list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-						public void onItemClick(AdapterView<?> parent, View view,
-						                        int position, long id) {
-						   
-							//Toast.makeText(MainActivity.this, "You Clicked at "+oslist.get(+position).get("naam"), Toast.LENGTH_SHORT).show();
+						public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 							
 							// selected item 
 							TextView txt = (TextView) view.findViewById(R.id.name);
@@ -317,6 +300,7 @@ public class MainActivity extends Activity {
 							  
 							// Launching new Activity on selecting single List Item
 							Intent i = new Intent(getApplicationContext(), SingleListItem.class);
+							
 							// sending data to new activity
 							i.putExtra("product", product);
 							startActivity(i);
@@ -337,50 +321,28 @@ public class MainActivity extends Activity {
     
     
     public void addItemsOnSpinner2() {
+    	//spinner menu items opzetten
 		spinner2 = (Spinner) findViewById(R.id.spinner2);
 		List<String> list = new ArrayList<String>();
 		list.add("vlaaien");
 		list.add("cakes");
 		list.add("bruidstaarten");
 		list.add("verjaardagstaarten");
+		
 		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, list);
 		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner2.setAdapter(dataAdapter);
 	}
 	 
 	public void addListenerOnSpinnerItemSelection() {
+		//items toevoegen
 		spinner2.setOnItemSelectedListener(new CustomOnItemSelectedListener());
-		
 	}
 	 
-
-
-	public void onClick(View src) {
-		//dit word de preference setting welke categorie
-		//EditText naamEditText = (EditText) this.findViewById(R.id.naamVeld); 
-		//String naam = naamEditText.getText().toString();
-		
-		//System.out.println("bericht:" + bericht);
-		
-		//serverCommunicator = new ServerCommunicator(this, "categorielijst");
-		//System.out.println("hij verzend");
-	}
-    
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-		
-		/*spinner2 = (Spinner) findViewById(R.id.spinner2);
-		List<String> list = new ArrayList<String>();
-		list.add("Vlaaien");
-		list.add("Cakes");
-		list.add("Bruidstaarten");
-		list.add("Verjaardagstaarten");
-		ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_spinner_item, list);
-		dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner2.setAdapter(dataAdapter);*/
-		
-	
+		//items toevoegen aan de actionbar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.activity_main_actions, menu);
  

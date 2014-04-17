@@ -36,6 +36,7 @@ public class ServerCommunicator implements Runnable
 		this.typeOpdracht = typeOpdr;
 		this.jArrayName = jArrayName;
 
+		//nieuwe thread starten
 		this.setThread(new Thread(this));
 		getThread().start();
 	}
@@ -46,20 +47,25 @@ public class ServerCommunicator implements Runnable
 	{
 		try
 		{
+			//nieuw socket aanmaken
 			Socket socket1 = new Socket();
+			
+			//socket verbinden
 			socket1.connect( new InetSocketAddress( "83.86.229.134", 4444 ), 4444 );
 
 			//verzend een bericht naar de server
 			this.sendMessage(typeOpdracht, socket1);
 
-			//wacht op een antwoord.
-			final JSONObject respons = waitForResponse(socket1);
-
-			if(respons instanceof JSONObject)
+			//wacht op een antwoord
+			final JSONObject response = waitForResponse(socket1);
+			
+			//controleer of response een json object is
+			if(response instanceof JSONObject)
 			{
-				this.setServerBericht(respons);
-				serverBericht = respons;
-				System.out.println("respons");
+				//serverbericht vullen
+				this.setServerBericht(response);
+				serverBericht = response;
+				System.out.println("Server response.");
 
 			}
 			else{
@@ -68,11 +74,11 @@ public class ServerCommunicator implements Runnable
 		}
 		catch( UnknownHostException e )
 		{
-			System.out.println("ServerCommunicator, can't find host");
+			System.out.println("ServerCommunicator - Can't find host");
 		}
 		catch( SocketTimeoutException e )
 		{
-			System.out.println("ServerCommunicator, time-out");
+			System.out.println("ServerCommunicator - Time-out");
 		}
 		catch (IOException e)
 		{
@@ -81,26 +87,28 @@ public class ServerCommunicator implements Runnable
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
-		//System.out.println("ONTVANGEN4:" + serverBericht);
-		getServerBericht();
 	}
 
 
 //ook deze methoden kunnen niet naar de UI direct communiceren, hou hier rekening mee
 	private void sendMessage( String message, Socket socket )
 	{
-
+		//in/outputstream aanmaken
 		DataInputStream is;
 		DataOutputStream os;
 
 		try {
 			String string = message;
+			//verbinding openen
 			is = new DataInputStream(socket.getInputStream());
 			os = new DataOutputStream(socket.getOutputStream());
 			PrintWriter pw = new PrintWriter(os);
+			
+			//bericht verzenden
 			pw.println(string);
 			pw.flush();
-
+			
+			//controleren of het bericht is aangekomen
 			BufferedReader in = new BufferedReader(new InputStreamReader(is));
 			in.readLine();
 
@@ -112,15 +120,16 @@ public class ServerCommunicator implements Runnable
 
 	}
 
-	//wacht op server bericht (na versturen)
 	private JSONObject waitForResponse(Socket socket) throws JSONException
 	{
 
 		try
 		{
+			//inputstream openen met socket
 			InputStream inputStream = socket.getInputStream();
 
 			try {
+				//bericht van server uitlezen/ophalen
 				BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1"), 8);
 				json = reader.readLine();
 				inputStream.close();
@@ -128,7 +137,6 @@ public class ServerCommunicator implements Runnable
 			} catch (Exception e) {
 				System.out.println("Error converting result" + json);
 			}
-
 
 			// try parse the string to a JSON object
 			try {
@@ -172,7 +180,7 @@ public class ServerCommunicator implements Runnable
 	}
 
 	public JSONObject getServerBericht(){
-		//System.out.println("serverbericht:" + serverBericht);
+		System.out.println("serverbericht:" + serverBericht);
 		return serverBericht;
 	}
 
