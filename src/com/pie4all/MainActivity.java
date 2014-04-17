@@ -115,7 +115,7 @@ public class MainActivity extends Activity {
 			       	alertDialog.setTitle("Pie4All");
 			
 			       	// Setting Dialog Message
-			       	alertDialog.setMessage("Crashed on loading db");
+			       	alertDialog.setMessage("De server lijkt overbelast te zijn. Onze excuses voor het ongemak.");
 	       	 		
 			       	// Setting Positive "Yes" Btn
 			       	alertDialog.setPositiveButton("Ik probeer het later nog eens",
